@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServiceBus xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="../../Design/XML/ServiceBus.xsd" DataGroupId="writeRepayment">
+
+    <DataServiceEngine>com.cdoframework.cdolib.database.BigDataEngine</DataServiceEngine>
+
+    <DataInstance ClassPath="com.cdoframework.cdolib.database.DataEngine" KeyIV="{P2P_Mysql_Common_KeyIV}">
+        <ConnectionPool Driver="com.mysql.jdbc.Driver" URI="{Mysql_Read_Fund_URI}"
+                        UserName="{Mysql_Read_Fund_UserName}" Password="{Mysql_Read_Fund_Password}">
+            <!--https://commons.apache.org/proper/commons-dbcp/configuration.html-->
+            <!--启动时创建 初始化连接数-->
+            <Property Type="Integer" Name="InitialSize" Value="1"></Property>
+            <!--最大活动连接，连接池中可同时连接的最大的连接数-->
+            <Property Type="Integer" Name="MaxActive" Value="10"></Property>
+            <!--
+                最大空闲连接，连接池中最大的空闲的连接数，超过的空闲连接将被释放，
+                如果设置为负数表示不限制（默认为8个，maxIdle不能设置太小，因为假如在高负载的情况下，
+                连接的打开时间比关闭的时间快，会引起连接池中idle的个数上升超过maxIdle，
+                而造成频繁的连接销毁和创建，类似于jvm参数中的Xmx设置)
+            -->
+            <Property Type="Integer" Name="MaxIdle" Value="20"></Property>
+            <!--
+                最小空闲连接，连接池中最小的空闲的连接数，低于这个数量会被创建新的连接
+                （默认为0，该参数越接近maxIdle，性能越好，因为连接的创建和销毁，都是需要消耗资源的；
+                但是不能太大，因为在机器很空闲的时候，也会创建低于minidle个数的连接，
+                类似于jvm参数中的Xmn设置）
+            -->
+            <Property Type="Integer" Name="MinIdle" Value="10"></Property>
+            <!--
+                从池中取连接的最大等待时间，单位ms.当没有可用连接时，连接池等待连接释放的最大时间，
+                超过该时间限制会抛出异常，如果设置-1表示无限等待（默认为无限）
+            -->
+            <Property Type="Long" Name="MaxWait" Value="10000"></Property>
+            <!--
+                每20秒运行一次空闲连接回收器，配置timeBetweenEvictionRunsMillis = "20000"后，
+                每20秒运行一次空闲连接回收器（独立线程）。并每次检查3个连接，如果连接空闲时间超过30分钟就销毁。
+                销毁连接后，连接数量就少了，如果小于minIdle数量，就新建连接，维护数量不少于minIdle，过行了新老更替
+            -->
+            <Property Type="Long" Name="TimeBetweenEvictionRunsMillis" Value="1000"></Property>
+            <!--在每次空闲连接回收器线程(如果有)运行时检查的连接数量-->
+            <Property Type="Integer" Name="NumTestsPerEvictionRun" Value="5"></Property>
+            <!--池中的连接空闲10分钟后被回收-->
+            <Property Type="Long" Name="MinEvictableIdleTimeMillis" Value="600000"></Property>
+            <!--连接被空闲连接回收器检测回收时否校验可用validationQuery必须给定合法值.默认：false-->
+            <Property Type="Boolean" Name="TestWhileIdle" Value="true"></Property>
+            <!--连接被get时是否校验可用，validationQuery必须给定合法值 默认：true-->
+            <Property Type="Boolean" Name="TestOnBorrow" Value="false"></Property>
+            <!--检查连接是否可用的查询语句-->
+            <Property Type="String" Name="ValidationQuery" Value="SELECT 1"></Property>
+            <!--是否启池的prepared statement 池功能 默认：false-->
+            <Property Type="Boolean" Name="PoolPreparedStatements" Value="false"></Property>
+            <!--连接泄漏回收参数，当可用连接数少于3个时才执行-->
+            <Property Type="Boolean" Name="RemoveAbandoned" Value="true"></Property>
+            <!--连接泄漏回收参数，x秒，泄漏的连接可以被删除的超时值 默认值：300 单位：秒-->
+            <Property Type="Integer" Name="RemoveAbandonedTimeout" Value="180"></Property>
+            <Property Type="Boolean" Name="LogAbandoned" Value="true"></Property>
+        </ConnectionPool>
+        <Database Id="readAssets" UseCommand="use Assets;"/>
+    </DataInstance>
+
+    <DataInstance ClassPath="com.cdoframework.cdolib.database.DataEngine" KeyIV="{P2P_Mysql_Common_KeyIV}">
+        <ConnectionPool Driver="com.mysql.jdbc.Driver" URI="{Mysql_Write_Fund_URI}"
+                        UserName="{Mysql_Write_Fund_UserName}" Password="{Mysql_Write_Fund_Password}">
+            <Property Type="Integer" Name="InitialSize" Value="1"></Property>
+            <Property Type="Integer" Name="MaxActive" Value="10"></Property>
+            <Property Type="Integer" Name="MaxIdle" Value="20"></Property>
+            <Property Type="Integer" Name="MinIdle" Value="10"></Property>
+            <Property Type="Long" Name="MaxWait" Value="10000"></Property>
+            <Property Type="Long" Name="TimeBetweenEvictionRunsMillis" Value="1000"></Property>
+            <Property Type="Integer" Name="NumTestsPerEvictionRun" Value="5"></Property>
+            <Property Type="Long" Name="MinEvictableIdleTimeMillis" Value="600000"></Property>
+            <Property Type="Boolean" Name="TestWhileIdle" Value="true"></Property>
+            <Property Type="Boolean" Name="TestOnBorrow" Value="false"></Property>
+            <Property Type="String" Name="ValidationQuery" Value="SELECT 1"></Property>
+            <Property Type="Boolean" Name="PoolPreparedStatements" Value="false"></Property>
+            <Property Type="Boolean" Name="RemoveAbandoned" Value="true"></Property>
+            <Property Type="Integer" Name="RemoveAbandonedTimeout" Value="180"></Property>
+            <Property Type="Boolean" Name="LogAbandoned" Value="true"></Property>
+        </ConnectionPool>
+        <Database Id="writeAssets" UseCommand="use Assets;"/>
+    </DataInstance>
+
+    <Plugin Resource="com/dafy/fundprovider/assets/service/borrow/plugin.xml" Encoding="utf-8"/>
+    <Plugin Resource="com/dafy/fundprovider/assets/service/user/plugin.xml" Encoding="utf-8"/>
+    <Plugin Resource="com/dafy/fundprovider/assets/service/callback/plugin.xml" Encoding="utf-8"/>
+    <Plugin Resource="com/dafy/fundprovider/assets/task/borrow/plugin.xml" Encoding="utf-8"/>
+    <Plugin Resource="com/dafy/fundprovider/assets/service/repay/plugin.xml" Encoding="utf-8"/>
+    <Plugin Resource="com/dafy/fundprovider/assets/service/protocolpay/plugin.xml" Encoding="utf-8"/>
+    <Plugin Resource="com/dafy/fundprovider/assets/task/repay/plugin.xml" Encoding="utf-8"/>
+    <Plugin Resource="com/dafy/fundprovider/assets/task/protocolpay/plugin.xml" Encoding="utf-8"/>
+
+    <EventProcessor ThreadCount="1"/>
+    <LocalNode Id="AssetsBusiness"/>
+    <NodeList Resource="NodeList.xml" Encoding="utf-8"/>
+
+</ServiceBus>
+
+

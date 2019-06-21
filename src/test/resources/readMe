@@ -1,0 +1,25 @@
+
+
+<<<<<<< .mine
+makeLoan
+1)检查渠道信息
+2)检查用户基本信息,用户申请信息
+3)调用用户中心进行注册
+4)如果开启(默认没开启)调用ApolloPlugin进行放款检查
+5)检查和本地的身份证信息是否一致否则更新
+6)更新账户信息
+7)如果为在石嘴山开户,则进行开户
+8)判断是否需要进行协议支付
+9)保存借款意向信息
+
+
+获取需要发送到交易创建意向的数据
+select * from tbBorrow where nState = 0 ORDER BY dtCreateTime limit 100
+调用交易http://borrow2.dafy.service/handleTrans.cdo,AssetProviderService.createBorrowIntent创建意向
+
+
+https://192.168.0.220/svn/tech/Trunk/外部业务/P2P/Business/AssetsGateway
+https://192.168.0.220/svn/tech/Trunk/外部业务/P2P/Business/AssetsBusiness
+
+bran
+https://192.168.0.220/svn/tech/Branch/20181105-即有开发/Develop/外部业务/P2P/Business/AssetsBusiness

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NodeList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="D:\workspace\Account\FBPDesign\XML\NodeList.xsd">
+
+    <!-- 协议支付签约-->
+    <Node Id="UserSign">
+        <HttpServiceClient URL="http://usersign.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="SignService" Enabled="true"/>
+        </TransFilter>
+    </Node>
+
+    <!-- 协议支付签约-->
+    <Node Id="CommonFundGateway">
+        <HttpServiceClient URL="http://commonfundgateway.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="FundPayProtocolService" Enabled="true"/>
+        </TransFilter>
+    </Node>
+
+    <!-- 用户中心服务-->
+    <Node Id="NotifyUserSignSuccess">
+        <HttpServiceClient URL="http://user.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="PartnersService" Enabled="true"/>
+        </TransFilter>
+    </Node>
+
+
+    <!-- 公共借款系统 -->
+    <Node Id="BorrowBusiness2">
+        <HttpServiceClient URL="http://borrow2.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="BorrowProductService" Enabled="true"/>
+            <Action ServiceName="BorrowIntentService" Enabled="true"/>
+            <Action ServiceName="BorrowerBillService" Enabled="true"/>
+            <Action ServiceName="BorrowerBillCallBackService" Enabled="true"/>
+            <Action ServiceName="FundProviderService" Enabled="true"/>
+            <Action ServiceName="AssetProviderService" Enabled="true"/>
+        </TransFilter>
+    </Node>
+
+    <!-- 公共还款系统 -->
+    <Node Id="RepaymentBusiness2">
+        <HttpServiceClient URL="http://repayment2.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="BillTaskService" Enabled="true"/>
+            <Action ServiceName="BillTaskCallbackService" Enabled="true" />
+        </TransFilter>
+    </Node>
+
+    <!-- 用户中心 -->
+    <Node Id="UserBusiness">
+        <HttpServiceClient URL="http://user2.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="UserService" Enabled="true"/>
+            <Action ServiceName="DepartmentService" Enabled="true"/>
+            <Action ServiceName="BorrowerService" Enabled="true"/>
+            <Action ServiceName="CustomerService" Enabled="true"/>
+            <Action ServiceName="PDFTaskService" Enabled="true"/>
+        </TransFilter>
+    </Node>
+
+
+    <!-- 账户中心 -->
+    <Node Id="Account">
+        <HttpServiceClient URL="http://account.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="CreditService" Enabled="true"/>
+            <Action ServiceName="BusinessCallService" Enabled="true" />
+        </TransFilter>
+    </Node>
+
+    <!-- 交易即有API -->
+    <Node Id="TransactionQueryApi">
+        <HttpServiceClient URL="http://transactionqueryapi.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="JYFQBorrowBillService" Enabled="true"/>
+        </TransFilter>
+    </Node>
+
+    <!-- 网关 -->
+    <Node Id="AssetsGateway">
+        <HttpServiceClient URL="http://assetsgateway.dafy.service/handleTrans.cdo" Encoding="utf-8"/>
+        <TransFilter Default="false">
+            <Action ServiceName="FundProvidersDatagramService" Enabled="true"/>
+        </TransFilter>
+    </Node>
+
+    <!-- 资料中心 -->
+    <Node Id="ApolloData">
+        <HttpServiceClient URL="http://apollodata.dafy.service/handleTrans.cdo" Encoding="utf-8" />
+        <TransFilter Default="false">
+            <Action ServiceName="CallService" Enabled="true" />
+        </TransFilter>
+    </Node>
+
+    <!-- 插件 -->
+    <Node Id="ApolloPlugin">
+        <HttpServiceClient URL="http://apolloplugin.dafy.service/handleTrans.cdo" Encoding="utf-8" />
+        <TransFilter Default="false">
+            <Action ServiceName="CreditPay150Service" Enabled="true" />
+            <Action ServiceName="Plugin150CheckService" Enabled="true" />
+            <Action ServiceName="Plugin150UserUpdateService" Enabled="true" />
+        </TransFilter>
+    </Node>
+
+</NodeList>
+

@@ -1,102 +1,76 @@
 package com.palace.dd.db;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.shardingsphere.api.config.sharding.KeyGeneratorConfiguration;
-import org.apache.shardingsphere.api.config.sharding.ShardingRuleConfiguration;
-import org.apache.shardingsphere.api.config.sharding.TableRuleConfiguration;
-import org.apache.shardingsphere.api.config.sharding.strategy.InlineShardingStrategyConfiguration;
-import org.apache.shardingsphere.api.config.sharding.strategy.StandardShardingStrategyConfiguration;
-import org.apache.shardingsphere.api.sharding.standard.PreciseShardingAlgorithm;
-import org.apache.shardingsphere.api.sharding.standard.PreciseShardingValue;
-import org.apache.shardingsphere.core.rule.TableRule;
-import org.apache.shardingsphere.shardingjdbc.api.ShardingDataSourceFactory;
+
+import io.shardingjdbc.core.api.ShardingDataSourceFactory;
+import io.shardingjdbc.core.api.algorithm.sharding.PreciseShardingValue;
+import io.shardingjdbc.core.api.algorithm.sharding.standard.PreciseShardingAlgorithm;
+import io.shardingjdbc.core.api.config.ShardingRuleConfiguration;
+import io.shardingjdbc.core.api.config.TableRuleConfiguration;
+import io.shardingjdbc.core.api.config.strategy.StandardShardingStrategyConfiguration;
 
 public class MainSharding {
-
-	static class PreciseShardingAlgorithmExa implements PreciseShardingAlgorithm{
-
-		@Override
-		public String doSharding(Collection availableTargetNames, PreciseShardingValue shardingValue) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		 
-	}
+	
+	static String[] tables = new String[] {"aaa","aaa"};
     DataSource getShardingDataSource() throws SQLException {
         ShardingRuleConfiguration shardingRuleConfig = new ShardingRuleConfiguration();
-        shardingRuleConfig.getTableRuleConfigs().add(getOrderTableRuleConfiguration());
-        shardingRuleConfig.getTableRuleConfigs().add(getOrderItemTableRuleConfiguration());
-        shardingRuleConfig.getBindingTableGroups().add("t_order, t_order_item");
-        shardingRuleConfig.getBroadcastTables().add("t_config");
-        shardingRuleConfig.setDefaultDatabaseShardingStrategyConfig(new InlineShardingStrategyConfiguration("user_id", "ds${user_id % 2}"));
-        shardingRuleConfig.setDefaultTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("order_id", new PreciseShardingAlgorithmExa()));
-        return ShardingDataSourceFactory.createDataSource(createDataSourceMap(), shardingRuleConfig,null);
+        StringBuilder sb = new StringBuilder();
+        for(String table : tables) {
+        	shardingRuleConfig.getTableRuleConfigs().add(getTableConfiguration(table));
+        	sb.append(table).append(",");
+        }
+        sb.deleteCharAt(sb.length()-1);
+        shardingRuleConfig.getBindingTableGroups().add(sb.toString());
+        return ShardingDataSourceFactory.createDataSource(createDataSourceMap(), shardingRuleConfig,new HashMap<String, Object>(), new Properties());
     }
     
-    private static KeyGeneratorConfiguration getKeyGeneratorConfiguration() {
-            KeyGeneratorConfiguration result = new KeyGeneratorConfiguration("","order_id");
-            return result;
-    }
-    
-    TableRuleConfiguration getOrderTableRuleConfiguration() {
+    public static TableRuleConfiguration getTableConfiguration(String table) {
         TableRuleConfiguration result = new TableRuleConfiguration();
-        result.setLogicTable("t_order");
-        result.setActualDataNodes("ds${0..1}.t_order${0..1}");
-        result.setKeyGeneratorConfig(getKeyGeneratorConfiguration());
+        result.setLogicTable(table);
+        result.setActualDataNodes("P2P${0..19}."+table+"${0..1999}");
+        result.setKeyGeneratorColumnName(SimpleKeyGenerator.class.getName());
+        result.setKeyGeneratorColumnName("lId");
+        result.setTableShardingStrategyConfig(new StandardShardingStrategyConfiguration(table,new PreciseShardingAlgorithm<Comparable<?>>() {
+			@Override
+			public String doSharding(Collection<String> availableTargetNames,
+					PreciseShardingValue<Comparable<?>> shardingValue) {
+				return null;
+			}
+		}.getClass().getName()));
+        result.setDatabaseShardingStrategyConfig(new StandardShardingStrategyConfiguration(table,new PreciseShardingAlgorithm<Comparable<?>>() {
+			@Override
+			public String doSharding(Collection<String> availableTargetNames,
+					PreciseShardingValue<Comparable<?>> shardingValue) {
+				return null;
+			}
+		}.getClass().getName()));
         return result;
     }
-    
-    TableRuleConfiguration getOrderItemTableRuleConfiguration() {
-        TableRuleConfiguration result = new TableRuleConfiguration();
-        result.setLogicTable("t_order_item");
-        result.setActualDataNodes("ds${0..1}.t_order_item${0..1}");
-        return result;
-    }
-    
-    
-    static int DBNum = 20;
-    public static List<TableRule> getTableRule(DataSourceRule dsr){
-    	String[] tableArr = new String[] {"tbBorrowIntent","tbBorrowerBill"};
-    	List<TableRule> retList = new ArrayList();
-    	for(String table : tableArr) {
-    		List<String> list = new ArrayList<>();
-	    	for(int i=0;i<DBNum*100;i++) {
-	    		list.add(table+i);
-	    	}
-	    	retList.add(TableRule.builder(table).actualTables(list).dataSourceRule(dsr).build());
+    Map<String, DataSource> createDataSourceMap() {
+    	Map<String, DataSource> resultMap = new HashMap<>();
+    	for(int i =0;i<19;i++) {
+    		String dataSourceName = "P2P"+i;
+	        BasicDataSource result = new BasicDataSource();
+	        result.setDriverClassName(com.mysql.jdbc.Driver.class.getName());
+	        result.setUrl(String.format("jdbc:mysql://testmysql:3306/%s", dataSourceName));
+	        result.setUsername("writedafy");
+	        result.setPassword("writeDafy!@#$");
+	        resultMap.put(dataSourceName, result);
     	}
-    	return retList;
+        return resultMap;
     }
-    static int DBNum = 20;
-	public static Map<String,DataSource> createDataSourceMap(){
-		Map<String,DataSource> map=new HashMap<String,DataSource>();
-		for(int i=0;i<DBNum;i++) {
-			String name = "P2P"+i;
-			map.put(name,createDataSource(name));
-		}
-		return map;
-	}
-	
-	public static DataSource createDataSource(String ds){
-		BasicDataSource bs=new BasicDataSource();
-		bs.setDriverClassName(com.mysql.jdbc.Driver.class.getName());
-		bs.setUrl(String.format("jdbc:mysql://TestHost:3306/%s", ds));
-		bs.setUsername("writedafy");
-		bs.setPassword("writeDafy!@#$");
-		return bs;
-	}
-	
-	public void testStringF(){
-		String s = String.format("string/%sbing%saaa%s", "name1","name2","name3"); 
-		System.out.println(s);
-	}
+    
+    
+  public static class SimpleKeyGenerator{
+    	
+    }
+    
 }
