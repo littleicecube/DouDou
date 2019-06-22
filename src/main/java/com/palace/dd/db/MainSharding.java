@@ -8,18 +8,17 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.shardingsphere.api.config.sharding.ShardingRuleConfiguration;
+import org.apache.shardingsphere.api.config.sharding.TableRuleConfiguration;
+import org.apache.shardingsphere.api.config.sharding.strategy.StandardShardingStrategyConfiguration;
+import org.apache.shardingsphere.shardingjdbc.api.ShardingDataSourceFactory;
 
 import com.palace.dd.db.alg.DBShardingAlg;
 import com.palace.dd.db.alg.TableShardingAlg;
 
-import io.shardingjdbc.core.api.ShardingDataSourceFactory;
-import io.shardingjdbc.core.api.config.ShardingRuleConfiguration;
-import io.shardingjdbc.core.api.config.TableRuleConfiguration;
-import io.shardingjdbc.core.api.config.strategy.StandardShardingStrategyConfiguration;
-
 public class MainSharding {
 	
-	static String[] tables = new String[] {"tbBorrowIntent","BorrowerBill"};
+	static String[] tables = new String[] {"tbBorrowIntent","tbBorrowerBill"};
 	public static DataSource getShardingDataSource() throws SQLException {
 	    ShardingRuleConfiguration shardingRuleConfig = new ShardingRuleConfiguration();
 	    StringBuilder sb = new StringBuilder();
@@ -29,12 +28,10 @@ public class MainSharding {
 	    }
 	    sb.deleteCharAt(sb.length()-1);
 	    shardingRuleConfig.getBindingTableGroups().add(sb.toString());
-	    return ShardingDataSourceFactory.createDataSource(createDataSourceMap(), shardingRuleConfig,new HashMap<String, Object>(), new Properties());
+	    return ShardingDataSourceFactory.createDataSource(createDataSourceMap(), shardingRuleConfig, getProp());
 	}
 	private static int DBNum = 20;
 	public static TableRuleConfiguration getTableConfiguration(String table) {
-		TableRuleConfiguration result = new TableRuleConfiguration();
-		result.setLogicTable(table);
 		StringBuilder sb = new StringBuilder();
 		for(int i =0;i<DBNum;i++) {
 			String tb = "P2P"+i+"."+table.trim()+"${"+i*100+".."+(i*100+99)+"},";
@@ -42,12 +39,10 @@ public class MainSharding {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		System.out.println("###Table:"+sb.toString());
-		result.setActualDataNodes(sb.toString());
-		result.setKeyGeneratorColumnName(SimpleKeyGenerator.class.getName());
-		result.setKeyGeneratorColumnName("lId");
+		TableRuleConfiguration result = new TableRuleConfiguration(table.toLowerCase(),sb.toString());
 		String shardingCol = "lBorrowerId";
-		result.setTableShardingStrategyConfig(new StandardShardingStrategyConfiguration(shardingCol,TableShardingAlg.class.getName()));
-		result.setDatabaseShardingStrategyConfig(new StandardShardingStrategyConfiguration(shardingCol,DBShardingAlg.class.getName()));
+		result.setTableShardingStrategyConfig(new StandardShardingStrategyConfiguration(shardingCol,new TableShardingAlg(),null));
+		result.setDatabaseShardingStrategyConfig(new StandardShardingStrategyConfiguration(shardingCol,new DBShardingAlg(),null));
 		return result;
 	}
    public static Map<String, DataSource> createDataSourceMap() {
@@ -63,7 +58,11 @@ public class MainSharding {
     	}
         return resultMap;
     }
-    
+    public static Properties getProp() {
+    	Properties pp = new Properties();
+    	pp.put("sql.show", true);
+    	return pp;
+    }
     
 	public static class SimpleKeyGenerator{
 	}

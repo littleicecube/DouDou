@@ -1,12 +1,13 @@
 package com.palace.dd.db.alg;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import io.shardingjdbc.core.keygen.KeyGenerator;
+import org.springframework.cache.interceptor.KeyGenerator;
 
 /**
  * <p></p>
@@ -20,18 +21,10 @@ public class MySqlKeyGenerator implements KeyGenerator {
     public MySqlKeyGenerator() {
     }
 
-    @Override
-    public synchronized Number generateKey() {
-        try (Connection conn = dataSource.getConnection();
-             Statement statement = conn.createStatement()) {
-            statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
-            ResultSet resultSet = statement.getGeneratedKeys();
-            if (resultSet.next()) {
-                return resultSet.getLong(1);
-            }
-        } catch (Exception e) {
-            return System.currentTimeMillis();
-        }
-        return System.currentTimeMillis();
-    }
+
+	@Override
+	public Object generate(Object target, Method method, Object... params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

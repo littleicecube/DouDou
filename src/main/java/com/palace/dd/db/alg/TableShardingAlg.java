@@ -2,8 +2,8 @@ package com.palace.dd.db.alg;
 
 import java.util.Collection;
 
-import io.shardingjdbc.core.api.algorithm.sharding.PreciseShardingValue;
-import io.shardingjdbc.core.api.algorithm.sharding.standard.PreciseShardingAlgorithm;
+import org.apache.shardingsphere.api.sharding.standard.PreciseShardingAlgorithm;
+import org.apache.shardingsphere.api.sharding.standard.PreciseShardingValue;
 
 public class TableShardingAlg implements PreciseShardingAlgorithm {
 	public TableShardingAlg() {
